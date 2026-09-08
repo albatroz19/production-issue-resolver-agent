@@ -1,0 +1,18 @@
+services:
+  ad-management-service:
+    description: Ad Management Service - proxies CH100 playlist and filler slot APIs to CMS
+    dependencies:
+      - campaign-management-service
+    apiMappings:
+      /api/v1/campaign-ch-100/multi-channel/filler-slots:
+        targetService: campaign-management-service
+        targetPath: /api/v1/ch-100/multi-channel/filler-slots
+        description: AMS forwards filler slot requests with SCTE data to CMS for asset attachment
+      /api/v1/playlist/asset/view:
+        targetService: campaign-management-service
+        targetPath: /api/v1/ch-100/playlist/asset/view
+        description: AMS enriches CMS asset view response with SCTE from local DB
+
+  campaign-management-service:
+    description: Campaign Management Service - CH100 slot and SCTE matching logic
+    dependencies: []
