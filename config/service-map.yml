@@ -4,6 +4,10 @@ services:
     dependencies:
       - campaign-management-service
     apiMappings:
+      /api/v1/campaign-ch-100:
+        targetService: campaign-management-service
+        targetPath: /api/v1/campaign-management/ch-100/get
+        description: AMS list/get campaigns proxies to CMS ch-100/get
       /api/v1/campaign-ch-100/multi-channel/filler-slots:
         targetService: campaign-management-service
         targetPath: /api/v1/ch-100/multi-channel/filler-slots

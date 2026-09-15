@@ -45,6 +45,9 @@ class SimpleCodeIndexService:
     def indexed_file_count(self) -> int:
         return len(self._all_files)
 
+    def all_files(self) -> List[IndexedFile]:
+        return list(self._all_files)
+
     def find_by_class_name(self, class_name: str) -> Optional[IndexedFile]:
         if not class_name:
             return None
