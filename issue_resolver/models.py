@@ -38,3 +38,25 @@ class DiagnosisResponse(BaseModel):
     related_incidents: List[str] = Field(default_factory=list, alias="relatedIncidents")
 
     model_config = {"populate_by_name": True}
+
+
+class TaskCommitInput(BaseModel):
+    repo: str
+    subject: str
+    tickets: List[str] = Field(default_factory=list)
+
+
+class TaskSummarizeRequest(BaseModel):
+    user: str
+    date: str
+    commits: List[TaskCommitInput] = Field(default_factory=list)
+
+
+class TaskSummaryEntry(BaseModel):
+    repo: str
+    description: str
+    tickets: List[str] = Field(default_factory=list)
+
+
+class TaskSummarizeResponse(BaseModel):
+    entries: List[TaskSummaryEntry] = Field(default_factory=list)

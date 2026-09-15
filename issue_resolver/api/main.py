@@ -2,9 +2,15 @@ from fastapi import FastAPI, Header, HTTPException, status
 from fastapi.responses import JSONResponse
 
 from issue_resolver.agent.issue_resolver_agent import IssueResolverAgent
+from issue_resolver.agent.task_summarizer import TaskSummarizer
 from issue_resolver.config import settings
 from issue_resolver.index.code_index import SimpleCodeIndexService
-from issue_resolver.models import DiagnosisResponse, IncidentRequest
+from issue_resolver.models import (
+    DiagnosisResponse,
+    IncidentRequest,
+    TaskSummarizeRequest,
+    TaskSummarizeResponse,
+)
 from issue_resolver.tools.investigation_tools import InvestigationTools
 
 app = FastAPI(title="Production Issue Resolver Agent", version="0.1.0")
@@ -17,6 +23,7 @@ code_index = SimpleCodeIndexService(
 )
 tools = InvestigationTools(code_index, settings.service_map_path)
 agent = IssueResolverAgent(settings, tools, code_index)
+task_summarizer = TaskSummarizer(settings)
 
 
 @app.get("/health")
@@ -65,6 +72,26 @@ def analyze_incident_llm(
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
             detail=f"LLM diagnosis failed: {exc}",
+        ) from exc
+
+
+@app.post("/api/v1/tasks/summarize", response_model=TaskSummarizeResponse)
+def summarize_tasks(
+    request: TaskSummarizeRequest,
+    x_poc_api_key: str | None = Header(default=None, alias="X-POC-API-KEY"),
+) -> TaskSummarizeResponse:
+    _validate_api_key(x_poc_api_key)
+    if not settings.llm_enabled:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="LLM not configured",
+        )
+    try:
+        return task_summarizer.summarize(request)
+    except Exception as exc:
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail=f"Task summarization failed: {exc}",
         ) from exc
 
 
