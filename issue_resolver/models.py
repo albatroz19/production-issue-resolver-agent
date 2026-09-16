@@ -60,3 +60,36 @@ class TaskSummaryEntry(BaseModel):
 
 class TaskSummarizeResponse(BaseModel):
     entries: List[TaskSummaryEntry] = Field(default_factory=list)
+
+
+class ChangelogCommitInput(BaseModel):
+    repo: str
+    sha: str
+    subject: str
+    author: str = ""
+    tickets: List[str] = Field(default_factory=list)
+    diff_stat: str = ""
+    patch: str = ""
+
+
+class ChangelogAnalyzeRequest(BaseModel):
+    date: str
+    commits: List[ChangelogCommitInput] = Field(default_factory=list)
+
+
+class ChangelogItem(BaseModel):
+    module: str
+    feature: str
+    change_type: str = Field(alias="changeType")
+    description: str
+    repo: str = ""
+    tickets: List[str] = Field(default_factory=list)
+
+    model_config = {"populate_by_name": True}
+
+
+class ChangelogAnalyzeResponse(BaseModel):
+    summary_markdown: str = Field(alias="summaryMarkdown")
+    items: List[ChangelogItem] = Field(default_factory=list)
+
+    model_config = {"populate_by_name": True}

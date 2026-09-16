@@ -2,10 +2,13 @@ from fastapi import FastAPI, Header, HTTPException, status
 from fastapi.responses import JSONResponse
 
 from issue_resolver.agent.issue_resolver_agent import IssueResolverAgent
+from issue_resolver.agent.changelog_analyzer import ChangelogAnalyzer
 from issue_resolver.agent.task_summarizer import TaskSummarizer
 from issue_resolver.config import settings
 from issue_resolver.index.code_index import SimpleCodeIndexService
 from issue_resolver.models import (
+    ChangelogAnalyzeRequest,
+    ChangelogAnalyzeResponse,
     DiagnosisResponse,
     IncidentRequest,
     TaskSummarizeRequest,
@@ -24,6 +27,7 @@ code_index = SimpleCodeIndexService(
 tools = InvestigationTools(code_index, settings.service_map_path)
 agent = IssueResolverAgent(settings, tools, code_index)
 task_summarizer = TaskSummarizer(settings)
+changelog_analyzer = ChangelogAnalyzer(settings)
 
 
 @app.get("/health")
@@ -72,6 +76,26 @@ def analyze_incident_llm(
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
             detail=f"LLM diagnosis failed: {exc}",
+        ) from exc
+
+
+@app.post("/api/v1/changelog/analyze", response_model=ChangelogAnalyzeResponse)
+def analyze_changelog(
+    request: ChangelogAnalyzeRequest,
+    x_poc_api_key: str | None = Header(default=None, alias="X-POC-API-KEY"),
+) -> ChangelogAnalyzeResponse:
+    _validate_api_key(x_poc_api_key)
+    if not settings.llm_enabled:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="LLM not configured",
+        )
+    try:
+        return changelog_analyzer.analyze(request)
+    except Exception as exc:
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail=f"Changelog analysis failed: {exc}",
         ) from exc
 
 

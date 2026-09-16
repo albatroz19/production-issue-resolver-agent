@@ -9,6 +9,7 @@ Internal LLM engine for the Java orchestrator. Runs Azure OpenAI tool-calling to
 | `POST /api/v1/incidents/analyze/llm` | Java POC (internal) | LLM-only; returns 503 if Azure not configured; fail-fast on LLM errors |
 | `POST /api/v1/incidents/analyze` | Standalone testing | Full analyze with rule-based fallback |
 | `POST /api/v1/tasks/summarize` | Daily Task Tracker backend | Converts git commits into professional timesheet descriptions |
+| `POST /api/v1/changelog/analyze` | Daily Task Tracker backend | Analyzes commit diffs into module/feature changelog (markdown + structured items) |
 | `GET /health` | Ops | Includes `llmReady` for readiness checks |
 
 ## Stack
